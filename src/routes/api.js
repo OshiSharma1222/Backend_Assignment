@@ -54,6 +54,15 @@ const donationSchema = z.object({
   amount: z.coerce.number().positive()
 });
 
+const charityAdminSchema = z.object({
+  name: z.string().min(2),
+  shortDescription: z.string().min(2),
+  longDescription: z.string().optional().nullable(),
+  imageUrl: z.string().optional().nullable(),
+  upcomingEvent: z.string().optional().nullable(),
+  isFeatured: z.coerce.boolean().optional()
+});
+
 async function trimScores(userId) {
   const { data: scores } = await supabase
     .from("scores")
@@ -460,6 +469,33 @@ router.get("/winners/winnings", requireAuth, async (req, res) => {
   }
 });
 
+router.get("/winners/proofs", requireAuth, async (req, res) => {
+  try {
+    const { data: userWinnings, error: winningsError } = await supabase
+      .from("winners")
+      .select("id")
+      .eq("user_id", req.user.id);
+
+    if (winningsError) throw winningsError;
+
+    const winnerIds = (userWinnings || []).map((winner) => winner.id);
+    if (winnerIds.length === 0) {
+      return res.json({ proofs: [] });
+    }
+
+    const { data: proofs, error } = await supabase
+      .from("winner_verifications")
+      .select("id, screenshot_url, review_status, created_at, winners(id, match_type, payout_status, draws(month_key))")
+      .in("winner_id", winnerIds)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return res.json({ proofs: proofs || [] });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch proof history" });
+  }
+});
+
 router.post("/winners/proof", requireAuth, proofUpload.single("screenshot"), async (req, res) => {
   try {
     const winnerId = String(req.body.winnerId || "");
@@ -550,6 +586,120 @@ router.get("/dashboard/admin", requireAuth, requireAdmin, async (req, res) => {
     });
   } catch (err) {
     return res.status(500).json({ message: "Failed to fetch admin stats" });
+  }
+});
+
+router.get("/admin/charities", requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const { data: charities, error } = await supabase
+      .from("charities")
+      .select("*")
+      .order("is_featured", { ascending: false })
+      .order("name", { ascending: true });
+
+    if (error) throw error;
+    return res.json({ charities: charities || [] });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch charities" });
+  }
+});
+
+router.put("/admin/charities/:id", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const parse = charityAdminSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ message: "Invalid charity data" });
+    }
+
+    const { data: charity, error } = await supabase
+      .from("charities")
+      .update({
+        name: parse.data.name,
+        short_description: parse.data.shortDescription,
+        long_description: parse.data.longDescription || null,
+        image_url: parse.data.imageUrl || null,
+        upcoming_event: parse.data.upcomingEvent || null,
+        is_featured: Boolean(parse.data.isFeatured)
+      })
+      .eq("id", req.params.id)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    return res.json({ charity });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to update charity" });
+  }
+});
+
+router.delete("/admin/charities/:id", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { error } = await supabase.from("charities").delete().eq("id", req.params.id);
+    if (error) throw error;
+    return res.json({ message: "Charity deleted" });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to delete charity" });
+  }
+});
+
+router.get("/admin/proofs", requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const { data: proofs, error } = await supabase
+      .from("winner_verifications")
+      .select("id, screenshot_url, review_status, created_at, reviewed_at, winners(id, match_type, payout_status, payout_amount, users(full_name, email), draws(month_key))")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return res.json({ proofs: proofs || [] });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch proof reviews" });
+  }
+});
+
+router.patch("/admin/proofs/:id", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const status = req.body.status === "approved" ? "approved" : "rejected";
+    const { data: proof, error } = await supabase
+      .from("winner_verifications")
+      .update({ review_status: status, reviewed_at: new Date().toISOString() })
+      .eq("id", req.params.id)
+      .select("id, screenshot_url, review_status, reviewed_at")
+      .single();
+
+    if (error) throw error;
+    return res.json({ proof });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to update proof review" });
+  }
+});
+
+router.patch("/admin/winners/:id/paid", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { data: winner, error: winnerError } = await supabase
+      .from("winners")
+      .select("id, payout_amount, payout_status, users(email)")
+      .eq("id", req.params.id)
+      .maybeSingle();
+
+    if (winnerError) throw winnerError;
+    if (!winner) {
+      return res.status(404).json({ message: "Winner not found" });
+    }
+
+    const { data: updatedWinner, error } = await supabase
+      .from("winners")
+      .update({ payout_status: "paid" })
+      .eq("id", req.params.id)
+      .select("id, payout_amount, payout_status")
+      .single();
+
+    if (error) throw error;
+
+    await sendPayoutCompleted(winner?.users?.email, winner?.payout_amount || 0);
+
+    return res.json({ winner: updatedWinner });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to mark winner as paid" });
   }
 });
 

@@ -7,9 +7,11 @@ import * as api from '../services/api';
 export default function WinnerProofPage() {
   const [loading, setLoading] = useState(false);
   const [winningsLoading, setWinningsLoading] = useState(true);
+  const [proofsLoading, setProofsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [winnings, setWinnings] = useState([]);
+  const [proofs, setProofs] = useState([]);
   const [selectedFileName, setSelectedFileName] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
@@ -18,6 +20,7 @@ export default function WinnerProofPage() {
 
   useEffect(() => {
     fetchWinnings();
+    fetchProofs();
   }, []);
 
   const fetchWinnings = async () => {
@@ -33,6 +36,17 @@ export default function WinnerProofPage() {
       setWinnings([]);
     } finally {
       setWinningsLoading(false);
+    }
+  };
+
+  const fetchProofs = async () => {
+    try {
+      const response = await api.winners.getProofs();
+      setProofs(response.data.proofs || []);
+    } catch (err) {
+      setProofs([]);
+    } finally {
+      setProofsLoading(false);
     }
   };
 
@@ -77,6 +91,7 @@ export default function WinnerProofPage() {
       setFormData({ winnerId: '' });
       setSelectedFile(null);
       setSelectedFileName('');
+      await fetchProofs();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to upload proof');
     } finally {
@@ -101,6 +116,30 @@ export default function WinnerProofPage() {
             ) : winnings.length === 0 ? (
               <p className="muted">No winnings are available yet.</p>
             ) : null}
+            <div style={{ marginTop: '20px' }}>
+              <h2 style={{ fontSize: '18px', marginBottom: '12px' }}>Uploaded Proofs</h2>
+              {proofsLoading ? (
+                <p className="muted">Loading uploaded proofs...</p>
+              ) : proofs.length === 0 ? (
+                <p className="muted">No proofs uploaded yet.</p>
+              ) : (
+                <ul className="list">
+                  {proofs.map((proof) => (
+                    <li key={proof.id} style={{ alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{ textAlign: 'left' }}>
+                        <span style={{ display: 'block' }}>
+                          {proof.winners?.draws?.month_key || 'Unknown draw'} - {proof.winners?.match_type || 'Unknown match'}
+                        </span>
+                        <span style={{ display: 'block', fontSize: '14px', color: 'var(--muted)' }}>
+                          {proof.review_status}
+                        </span>
+                        <a href={proof.screenshot_url} target="_blank" rel="noreferrer">View uploaded proof</a>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <form onSubmit={handleSubmit} className="inline-form stack">
               <div>
                 <label>Select Your Win</label>

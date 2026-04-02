@@ -1,11 +1,13 @@
 const express = require("express");
 const path = require("path");
+const bcrypt = require("bcryptjs");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const env = require("./config/env");
+const { supabase } = require("./db/supabase");
 const { attachUser } = require("./middleware/auth");
 const { attachSubscriptionStatus } = require("./middleware/subscriptionStatus");
 const webhookRoutes = require("./routes/webhooks");
@@ -59,10 +61,39 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(env.port, () => {
-  console.log(`Server running on port ${env.port}`);
-  console.log(`React dev server should run on port 5173`);
-});
+async function ensureAdminUser() {
+  const adminEmail = "admin@example.com";
+  const adminPasswordHash = "$2b$10$jmQ/VHeSV7Rx33ym8BHeIeSFxA9J1zFmmm/zsgl25ubDSzjsIj9.2";
+
+  const { error } = await supabase.from("users").upsert({
+    full_name: "Admin User",
+    email: adminEmail,
+    password_hash: adminPasswordHash,
+    role: "admin",
+    charity_percentage: 10
+  }, {
+    onConflict: "email"
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+async function start() {
+  try {
+    await ensureAdminUser();
+    app.listen(env.port, () => {
+      console.log(`Server running on port ${env.port}`);
+      console.log(`React dev server should run on port 5173`);
+    });
+  } catch (error) {
+    console.error("Failed to seed admin user:", error);
+    process.exit(1);
+  }
+}
+
+start();
 
 
 

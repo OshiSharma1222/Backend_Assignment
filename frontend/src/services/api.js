@@ -56,12 +56,22 @@ export const winners = {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
   getWinnings: () => api.get('/api/winners/winnings'),
+  getProofs: () => api.get('/api/winners/proofs'),
 };
 
 // Dashboard APIs
 export const dashboard = {
   getStats: () => api.get('/api/dashboard'),
   getAdminStats: () => api.get('/api/dashboard/admin'),
+};
+
+export const admin = {
+  getCharities: () => api.get('/api/admin/charities'),
+  updateCharity: (id, data) => api.put(`/api/admin/charities/${id}`, data),
+  deleteCharity: (id) => api.delete(`/api/admin/charities/${id}`),
+  getProofs: () => api.get('/api/admin/proofs'),
+  reviewProof: (id, status) => api.patch(`/api/admin/proofs/${id}`, { status }),
+  markWinnerPaid: (id) => api.patch(`/api/admin/winners/${id}/paid`),
 };
 
 export default api;

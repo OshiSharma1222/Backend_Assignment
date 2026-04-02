@@ -7,9 +7,12 @@ import * as api from '../services/api';
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [savingScore, setSavingScore] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
   const [formData, setFormData] = useState({
+    planType: 'monthly',
+    charityPercentage: 10,
     value: '',
     playedOn: new Date().toISOString().slice(0, 10),
   });
@@ -35,6 +38,24 @@ export default function DashboardPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSubscribing(true);
+
+    try {
+      await api.subscriptions.subscribe({
+        planType: formData.planType,
+        charityPercentage: Number(formData.charityPercentage),
+      });
+      await fetchDashboardData();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create subscription');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   const handleAddScore = async (e) => {
@@ -98,19 +119,32 @@ export default function DashboardPage() {
                 <p style={{ margin: '0 0 8px 0' }}>Status: <strong>{data?.subscription?.status || 'inactive'}</strong></p>
                 <p style={{ margin: '0' }}>Renewal: {data?.subscription?.renews_at ? new Date(data.subscription.renews_at).toDateString() : 'Not subscribed'}</p>
               </div>
-              <form onSubmit={(e) => e.preventDefault()} className="inline-form stack">
+              <form onSubmit={handleSubscribe} className="inline-form stack">
                 <div>
                   <label>Plan Type</label>
-                  <select defaultValue="monthly">
+                  <select
+                    name="planType"
+                    value={formData.planType}
+                    onChange={handleChange}
+                  >
                     <option value="monthly">Monthly - $49</option>
                     <option value="yearly">Yearly - $490</option>
                   </select>
                 </div>
                 <div>
                   <label>Charity %</label>
-                  <input type="number" min="10" max="100" defaultValue="10" />
+                  <input
+                    type="number"
+                    name="charityPercentage"
+                    min="10"
+                    max="100"
+                    value={formData.charityPercentage}
+                    onChange={handleChange}
+                  />
                 </div>
-                <button className="btn">Subscribe / Renew</button>
+                <button className="btn" disabled={subscribing}>
+                  {subscribing ? 'Subscribing...' : 'Subscribe / Renew'}
+                </button>
               </form>
             </article>
 
@@ -172,7 +206,7 @@ export default function DashboardPage() {
                   <li key={i}>
                     <div style={{ textAlign: 'left' }}>
                       <span style={{ display: 'block' }}>{w.match_type} - {w.draws?.month_key}</span>
-                      <span style={{ display: 'block', fontSize: '14px', color: 'var(--muted)' }}>${Number(w.payout_amount).toFixed(2)} • {w.payout_status}</span>
+                      <span style={{ display: 'block', fontSize: '14px', color: 'var(--muted)' }}>${Number(w.payout_amount).toFixed(2)} - {w.payout_status}</span>
                     </div>
                   </li>
                 ))}

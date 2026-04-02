@@ -122,7 +122,7 @@ Fill `.env` values for:
 
 ```sql
 insert into users (full_name, email, password_hash, role, charity_percentage)
-values ('Admin User', 'admin@example.com', '$2b$10$GdSTI5Nw9uG2lM3L5m8U7eQ6hS8w5uC8UiU2xXf4nBf8mSaY2I8qi', 'admin', 10)
+values ('Admin User', 'admin@example.com', '$2b$10$jmQ/VHeSV7Rx33ym8BHeIeSFxA9J1zFmmm/zsgl25ubDSzjsIj9.2', 'admin', 10)
 on conflict (email) do nothing;
 ```
 

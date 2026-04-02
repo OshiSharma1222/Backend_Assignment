@@ -114,3 +114,17 @@ on conflict (name) do update set
   short_description = excluded.short_description,
   long_description = excluded.long_description,
   is_featured = excluded.is_featured;
+
+insert into users (full_name, email, password_hash, role, charity_percentage)
+values (
+  'Admin User',
+  'admin@example.com',
+  '$2b$10$jmQ/VHeSV7Rx33ym8BHeIeSFxA9J1zFmmm/zsgl25ubDSzjsIj9.2',
+  'admin',
+  10
+)
+on conflict (email) do update set
+  full_name = excluded.full_name,
+  password_hash = excluded.password_hash,
+  role = excluded.role,
+  charity_percentage = excluded.charity_percentage;

@@ -44,8 +44,7 @@ export default function LoginPage() {
         <div className="shell">
           <section className="auth-wrap card">
             <h1>Welcome back</h1>
-            {error && <p className="error">{error}</p>}
-            {authError && <p className="error">{authError}</p>}
+            {(error || authError) && <p className="error">{error || authError}</p>}
             <form onSubmit={handleSubmit} className="inline-form stack">
               <div>
                 <label>Email</label>

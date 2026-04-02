@@ -9,37 +9,57 @@ const env = require("./config/env");
 const { attachUser } = require("./middleware/auth");
 const { attachSubscriptionStatus } = require("./middleware/subscriptionStatus");
 const webhookRoutes = require("./routes/webhooks");
-const webRoutes = require("./routes/web");
+const apiRoutes = require("./routes/api");
 const { notFound, errorHandler } = require("./middleware/errors");
 
 const app = express();
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "..", "views"));
+// CORS configuration for React frontend
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
 
 app.use(
   helmet({
     contentSecurityPolicy: false
   })
 );
-app.use(cors());
 app.use(morgan("dev"));
+
+// Webhooks route MUST come before JSON parser for signature verification
 app.use("/webhooks", webhookRoutes);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(attachUser);
 app.use(attachSubscriptionStatus);
-app.use((req, res, next) => {
-  res.locals.user = req.user || null;
-  next();
-});
 
-app.use(webRoutes);
+// API Routes
+app.use("/api", apiRoutes);
+
+// Serve React frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, "..", "frontend", "dist");
+  app.use(express.static(frontendPath));
+  
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+} else {
+  // Development: return a simple message for non-API routes
+  app.get("*", (req, res) => {
+    res.json({ message: "React frontend running on http://localhost:5173" });
+  });
+}
+
 app.use(notFound);
 app.use(errorHandler);
 
 app.listen(env.port, () => {
   console.log(`Server running on port ${env.port}`);
+  console.log(`React dev server should run on port 5173`);
 });
+

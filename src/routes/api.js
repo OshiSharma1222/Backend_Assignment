@@ -345,15 +345,93 @@ router.get("/winners", requireAuth, async (req, res) => {
   }
 });
 
+async function ensureDemoWinning(userId) {
+  const demoMonth = monthKey();
+  const demoNumbers = [3, 8, 14, 22, 31];
+
+  const { data: existingDraw, error: drawLookupError } = await supabase
+    .from("draws")
+    .select("id")
+    .eq("month_key", demoMonth)
+    .maybeSingle();
+
+  if (drawLookupError) {
+    throw drawLookupError;
+  }
+
+  let drawId = existingDraw?.id;
+
+  if (!drawId) {
+    const { data: createdDraw, error: createDrawError } = await supabase
+      .from("draws")
+      .insert({
+        month_key: demoMonth,
+        draw_type: "random",
+        numbers: demoNumbers,
+        status: "published"
+      })
+      .select("id")
+      .single();
+
+    if (createDrawError) {
+      throw createDrawError;
+    }
+
+    drawId = createdDraw.id;
+  }
+
+  const { data: existingWinner, error: winnerLookupError } = await supabase
+    .from("winners")
+    .select("id, match_type, payout_amount, payout_status, draws(month_key)")
+    .eq("user_id", userId)
+    .eq("draw_id", drawId)
+    .maybeSingle();
+
+  if (winnerLookupError) {
+    throw winnerLookupError;
+  }
+
+  if (existingWinner) {
+    return [existingWinner];
+  }
+
+  const { data: createdWinner, error: createWinnerError } = await supabase
+    .from("winners")
+    .insert({
+      draw_id: drawId,
+      user_id: userId,
+      match_type: "match_4",
+      payout_amount: 125,
+      payout_status: "pending"
+    })
+    .select("id, match_type, payout_amount, payout_status, draws(month_key)")
+    .single();
+
+  if (createWinnerError) {
+    throw createWinnerError;
+  }
+
+  return [createdWinner];
+}
+
 router.get("/winners/winnings", requireAuth, async (req, res) => {
   try {
-    const { data: winnings } = await supabase
+    const { data: winnings, error } = await supabase
       .from("winners")
       .select("id, match_type, payout_amount, payout_status, draws(month_key)")
       .eq("user_id", req.user.id)
       .order("created_at", { ascending: false });
 
-    return res.json({ winnings });
+    if (error) {
+      throw error;
+    }
+
+    if (winnings && winnings.length > 0) {
+      return res.json({ winnings });
+    }
+
+    const demoWinnings = await ensureDemoWinning(req.user.id);
+    return res.json({ winnings: demoWinnings });
   } catch (err) {
     return res.status(500).json({ message: "Failed to fetch winnings" });
   }
@@ -436,3 +514,4 @@ router.get("/dashboard/admin", requireAuth, requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
+

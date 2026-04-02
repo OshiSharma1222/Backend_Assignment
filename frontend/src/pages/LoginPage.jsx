@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <section className="auth-wrap card">
             <h1>Welcome back</h1>
@@ -66,7 +66,7 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              <button type="submit" className="btn" disabled={loading}>
+              <button type="submit" className="btn primary" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>

@@ -30,24 +30,24 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <section className="hero">
-            <div>
-              <p className="eyebrow">Monthly Draw • Real Charity Impact</p>
+            <div className="hero-content">
+              <span className="eyebrow">Monthly Draw • Real Charity Impact</span>
               <h1>Play your scores. Fund good causes. Win fair rewards.</h1>
               <p>
                 Submit your 5 latest Stableford scores, join the {currentMonth} draw, and direct your
                 subscription contribution to a charity you trust.
               </p>
               <div className="cta-row">
-                <Link to="/register" className="btn">Start Subscription</Link>
+                <Link to="/register" className="btn primary">Start Subscription</Link>
                 <Link to="/charities" className="ghost">Explore Charities</Link>
               </div>
             </div>
             <div className="card glass">
               <h3>How It Works</h3>
-              <ol style={{ margin: '0', paddingLeft: '20px', textAlign: 'left' }}>
+              <ol className="list" style={{ marginTop: '1rem', paddingLeft: 0, gap: '0.5rem' }}>
                 <li>Subscribe monthly or yearly</li>
                 <li>Keep your latest 5 scores updated</li>
                 <li>Admin runs monthly draw</li>
@@ -58,7 +58,10 @@ export default function HomePage() {
 
           <section className="section-grid three">
             {loading ? (
-              <p>Loading featured charities...</p>
+              <div className="loading">
+                <div className="spinner"></div>
+                <p>Loading featured charities...</p>
+              </div>
             ) : charities.length > 0 ? (
               charities.map(charity => (
                 <article key={charity.id} className="card">
@@ -67,7 +70,7 @@ export default function HomePage() {
                 </article>
               ))
             ) : (
-              <p>No featured charities available</p>
+              <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No featured charities available</p>
             )}
           </section>
         </div>

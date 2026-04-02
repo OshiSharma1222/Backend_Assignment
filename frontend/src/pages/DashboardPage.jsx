@@ -91,7 +91,7 @@ export default function DashboardPage() {
     return (
       <>
         <Header />
-        <main style={{ flex: 1, paddingBottom: '20px' }}>
+        <main>
           <div className="shell">
             <div className="loading">
               <div className="spinner"></div>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <h1>Dashboard</h1>
           {error && <p className="error">{error}</p>}
@@ -142,7 +142,7 @@ export default function DashboardPage() {
                     onChange={handleChange}
                   />
                 </div>
-                <button className="btn" disabled={subscribing}>
+                <button className="btn primary" disabled={subscribing}>
                   {subscribing ? 'Subscribing...' : 'Subscribe / Renew'}
                 </button>
               </form>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                     required
                   />
                 </div>
-                <button className="btn" disabled={savingScore}>
+                <button className="btn primary" disabled={savingScore}>
                   {savingScore ? 'Saving...' : 'Add Score'}
                 </button>
               </form>

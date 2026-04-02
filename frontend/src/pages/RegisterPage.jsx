@@ -78,7 +78,7 @@ export default function RegisterPage() {
   return (
     <>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <section className="auth-wrap card">
             <h1>Create account</h1>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                   required
                 />
               </div>
-              <button type="submit" className="btn" disabled={loading}>
+              <button type="submit" className="btn primary" disabled={loading}>
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>

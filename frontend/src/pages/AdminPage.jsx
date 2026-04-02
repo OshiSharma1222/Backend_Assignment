@@ -190,7 +190,7 @@ export default function AdminPage() {
     return (
       <>
         <Header />
-        <main style={{ flex: 1, paddingBottom: '20px' }}>
+        <main>
           <div className="shell">
             <div className="loading">
               <div className="spinner"></div>
@@ -206,7 +206,7 @@ export default function AdminPage() {
   return (
     <ProtectedRoute requireAdmin>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <h1>Admin Dashboard</h1>
           {error && <p className="error">{error}</p>}
@@ -232,10 +232,10 @@ export default function AdminPage() {
                 <p style={{ margin: '0' }}>Total won: <strong>${dashboardData?.totalWon?.toFixed(2) || '0.00'}</strong></p>
               </div>
               <div className="cta-row">
-                <button className="btn" onClick={() => handlePublishDraw('random')} disabled={savingDraw}>
+                <button className="btn primary" onClick={() => handlePublishDraw('random')} disabled={savingDraw}>
                   {savingDraw ? 'Publishing...' : 'Publish Random Draw'}
                 </button>
-                <button className="btn" onClick={() => handlePublishDraw('algorithmic')} disabled={savingDraw}>
+                <button className="btn primary" onClick={() => handlePublishDraw('algorithmic')} disabled={savingDraw}>
                   {savingDraw ? 'Publishing...' : 'Publish Algorithmic Draw'}
                 </button>
               </div>
@@ -309,7 +309,7 @@ export default function AdminPage() {
                   <input type="checkbox" name="isFeatured" checked={charityForm.isFeatured} onChange={handleCharityChange} />
                   Featured charity
                 </label>
-                <button className="btn" disabled={savingCharity || !charityId}>
+                <button className="btn primary" disabled={savingCharity || !charityId}>
                   {savingCharity ? 'Saving...' : 'Update Charity'}
                 </button>
               </form>
@@ -367,7 +367,7 @@ export default function AdminPage() {
                         Reject
                       </button>
                       {proof.winners?.payout_status !== 'paid' && (
-                        <button type="button" className="btn" onClick={() => handleMarkPaid(proof.winners.id)} disabled={markingPaidId === proof.winners.id}>
+                        <button type="button" className="btn primary" onClick={() => handleMarkPaid(proof.winners.id)} disabled={markingPaidId === proof.winners.id}>
                           {markingPaidId === proof.winners.id ? 'Saving...' : 'Mark Paid'}
                         </button>
                       )}

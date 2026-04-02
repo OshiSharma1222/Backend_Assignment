@@ -102,7 +102,7 @@ export default function WinnerProofPage() {
   return (
     <ProtectedRoute>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <section className="auth-wrap card">
             <h1>Upload Winner Proof</h1>
@@ -173,7 +173,7 @@ export default function WinnerProofPage() {
                   Selected file: {selectedFileName}
                 </p>
               )}
-              <button type="submit" className="btn" disabled={loading || winningsLoading || winnings.length === 0}>
+              <button type="submit" className="btn primary" disabled={loading || winningsLoading || winnings.length === 0}>
                 {loading ? 'Uploading...' : 'Upload Proof'}
               </button>
             </form>

@@ -26,7 +26,7 @@ export default function CharitiesPage() {
   return (
     <>
       <Header />
-      <main style={{ flex: 1, paddingBottom: '20px' }}>
+      <main>
         <div className="shell">
           <h1>Featured Charities</h1>
           {error && <p className="error">{error}</p>}

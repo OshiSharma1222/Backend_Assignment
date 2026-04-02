@@ -1,0 +1,9 @@
+<%- include('partials/head', { title, user }) %>
+<section class="card">
+  <h1>Draw Simulation Result</h1>
+  <p>Month: <strong><%= result.month %></strong></p>
+  <p>Numbers: <strong><%= result.drawNumbers.join(', ') %></strong></p>
+  <p>Potential winners: <strong><%= result.simulation.length %></strong></p>
+  <a class="btn" href="/admin">Back to Admin</a>
+</section>
+<%- include('partials/foot') %>

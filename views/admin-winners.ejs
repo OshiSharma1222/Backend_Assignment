@@ -1,0 +1,24 @@
+<%- include('partials/head', { title, user }) %>
+<section class="card">
+  <h1>Winner Proof Review</h1>
+  <ul class="list">
+    <% verifications.forEach(v => { %>
+      <li>
+        <span>
+          <strong><%= v.winners?.users?.full_name %></strong> • <%= v.winners?.draws?.month_key %> • <%= v.winners?.match_type %>
+          <br />
+          <a href="<%= v.screenshot_url %>" target="_blank" rel="noreferrer">Open proof</a>
+        </span>
+        <span><%= v.review_status %></span>
+      </li>
+      <li>
+        <form method="post" action="/admin/winner/review" class="inline-form">
+          <input type="hidden" name="verificationId" value="<%= v.id %>" />
+          <select name="status"><option value="approved">Approve</option><option value="rejected">Reject</option></select>
+          <button class="btn">Update</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+<%- include('partials/foot') %>

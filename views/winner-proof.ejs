@@ -1,0 +1,15 @@
+<%- include('partials/head', { title, user }) %>
+<section class="card">
+  <h1>Winner Verification Upload</h1>
+  <p>Upload a score screenshot URL for any winning row awaiting verification.</p>
+  <form method="post" action="/winner-proof" class="inline-form stack">
+    <select name="winnerId" required>
+      <% winners.forEach(winner => { %>
+        <option value="<%= winner.id %>"><%= winner.draws?.month_key %> • <%= winner.match_type %> • <%= winner.payout_status %></option>
+      <% }) %>
+    </select>
+    <input type="url" name="screenshotUrl" placeholder="https://..." required />
+    <button class="btn">Submit Proof</button>
+  </form>
+</section>
+<%- include('partials/foot') %>

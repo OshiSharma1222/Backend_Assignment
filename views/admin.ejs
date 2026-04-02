@@ -1,0 +1,57 @@
+<%- include('partials/head', { title, user }) %>
+<section class="section-grid three">
+  <article class="card"><h3>Total Users</h3><p><%= totalUsers %></p></article>
+  <article class="card"><h3>Total Prize Pool</h3><p>$<%= Number(totalPool).toFixed(2) %></p></article>
+  <article class="card"><h3>Charity Contributions</h3><p>$<%= Number(charityTotal).toFixed(2) %></p></article>
+</section>
+
+<section class="section-grid two">
+  <article class="card">
+    <h2>Draw Controls</h2>
+    <form method="post" action="/admin/draws/simulate" class="inline-form">
+      <select name="drawType"><option value="random">Random</option><option value="algorithm">Algorithm</option></select>
+      <button class="ghost">Run Simulation</button>
+    </form>
+    <form method="post" action="/admin/draws/publish" class="inline-form">
+      <select name="drawType"><option value="random">Random</option><option value="algorithm">Algorithm</option></select>
+      <button class="btn">Publish Monthly Draw</button>
+    </form>
+
+    <h3>Recent Draws</h3>
+    <ul class="list">
+      <% draws.forEach(d => { %>
+        <li><span><%= d.month_key %> • <%= d.draw_type %></span><span><%= d.status %></span></li>
+      <% }) %>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h2>Add Charity</h2>
+    <form method="post" action="/admin/charities" class="inline-form stack">
+      <input name="name" placeholder="Name" required />
+      <input name="shortDescription" placeholder="Short description" required />
+      <textarea name="longDescription" placeholder="Long description"></textarea>
+      <input name="imageUrl" placeholder="Image URL" />
+      <input name="upcomingEvent" placeholder="Upcoming event" />
+      <label class="checkbox"><input type="checkbox" name="isFeatured" /> Featured</label>
+      <button class="btn">Save Charity</button>
+    </form>
+  </article>
+</section>
+
+<section class="card">
+  <h2>Winners and Payout</h2>
+  <ul class="list">
+    <% winners.forEach(w => { %>
+      <li>
+        <span><%= w.users?.full_name %> • <%= w.match_type %> • <%= w.draws?.month_key %></span>
+        <span>$<%= Number(w.payout_amount).toFixed(2) %> • <%= w.payout_status %></span>
+        <% if (w.payout_status === 'pending') { %>
+          <form action="/admin/winner/paid" method="post"><input type="hidden" name="winnerId" value="<%= w.id %>" /><button class="ghost">Mark Paid</button></form>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+  <a class="btn" href="/admin/winners">Review Proof Uploads</a>
+</section>
+<%- include('partials/foot') %>

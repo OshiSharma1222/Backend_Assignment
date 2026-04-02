@@ -1,0 +1,68 @@
+<%- include('partials/head', { title, user }) %>
+<section class="section-grid two">
+  <article class="card">
+    <h2>Subscription</h2>
+    <p>Status: <strong><%= subscription?.status || 'inactive' %></strong></p>
+    <p>Renewal: <%= subscription?.renews_at ? new Date(subscription.renews_at).toDateString() : 'Not subscribed' %></p>
+    <form action="/dashboard/subscribe" method="post" class="inline-form">
+      <select name="planType">
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+      <input type="number" name="charityPercentage" min="10" max="100" value="<%= user.charity_percentage || 10 %>" />
+      <button class="btn">Subscribe / Renew</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>Participation</h2>
+    <p>Published draws in recent history: <strong><%= drawCount %></strong></p>
+    <p>Total won: <strong>$<%= totalWon.toFixed(2) %></strong></p>
+    <a class="ghost" href="/winner-proof">Upload winner proof</a>
+  </article>
+</section>
+
+<section class="section-grid two">
+  <article class="card">
+    <h2>Latest 5 Scores</h2>
+    <form action="/dashboard/scores" method="post" class="inline-form">
+      <input type="number" min="1" max="45" name="value" placeholder="Stableford score" required />
+      <input type="date" name="playedOn" required />
+      <button class="btn">Add Score</button>
+    </form>
+    <ul class="list">
+      <% scores.forEach(score => { %>
+      <li>
+        <span><%= score.value %> pts</span>
+        <span><%= new Date(score.played_on).toDateString() %></span>
+      </li>
+      <% }) %>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h2>Charity Settings</h2>
+    <form action="/dashboard/charity" method="post" class="inline-form stack">
+      <select name="charityId">
+        <% charities.forEach(c => { %>
+          <option value="<%= c.id %>" <%= user.selected_charity_id === c.id ? 'selected' : '' %>><%= c.name %></option>
+        <% }) %>
+      </select>
+      <input type="number" min="10" max="100" name="charityPercentage" value="<%= user.charity_percentage || 10 %>" required />
+      <button class="btn">Update Charity Preference</button>
+    </form>
+  </article>
+</section>
+
+<section class="card">
+  <h2>Winnings Overview</h2>
+  <ul class="list">
+    <% winnings.forEach(w => { %>
+      <li>
+        <span><%= w.match_type %> - <%= w.draws?.month_key %></span>
+        <span>$<%= Number(w.payout_amount).toFixed(2) %> • <%= w.payout_status %></span>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+<%- include('partials/foot') %>

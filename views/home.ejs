@@ -1,0 +1,33 @@
+<%- include('partials/head', { title, user }) %>
+<section class="hero">
+  <div>
+    <p class="eyebrow">Monthly Draw • Real Charity Impact</p>
+    <h1>Play your scores. Fund good causes. Win fair rewards.</h1>
+    <p>
+      Submit your 5 latest Stableford scores, join the <%= month %> draw, and direct your subscription contribution to a charity you trust.
+    </p>
+    <div class="cta-row">
+      <a class="btn" href="/register">Start Subscription</a>
+      <a class="ghost" href="/charities">Explore Charities</a>
+    </div>
+  </div>
+  <div class="card glass">
+    <h3>How It Works</h3>
+    <ol>
+      <li>Subscribe monthly or yearly</li>
+      <li>Keep your latest 5 scores updated</li>
+      <li>Admin runs monthly draw</li>
+      <li>Winners upload proof, get paid</li>
+    </ol>
+  </div>
+</section>
+
+<section class="section-grid">
+  <% charities.filter(c => c.is_featured).slice(0,3).forEach(charity => { %>
+    <article class="card">
+      <h3><%= charity.name %></h3>
+      <p><%= charity.short_description %></p>
+    </article>
+  <% }) %>
+</section>
+<%- include('partials/foot') %>

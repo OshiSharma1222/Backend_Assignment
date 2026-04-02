@@ -1,0 +1,13 @@
+<%- include('partials/head', { title, user }) %>
+<section class="auth-wrap card">
+  <h1>Welcome back</h1>
+  <% if (error) { %><p class="error"><%= error %></p><% } %>
+  <form method="post" action="/login">
+    <label>Email</label>
+    <input type="email" name="email" required />
+    <label>Password</label>
+    <input type="password" name="password" required />
+    <button class="btn" type="submit">Sign In</button>
+  </form>
+</section>
+<%- include('partials/foot') %>

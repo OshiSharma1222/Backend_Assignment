@@ -1,0 +1,42 @@
+{
+  "name": "backend_assignment",
+  "version": "1.0.0",
+  "description": "Golf Charity Subscription Platform backend assignment using Express + Supabase",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js",
+    "check": "node --check src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OshiSharma1222/Backend_Assignment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/OshiSharma1222/Backend_Assignment/issues"
+  },
+  "homepage": "https://github.com/OshiSharma1222/Backend_Assignment#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.101.1",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dayjs": "^1.11.20",
+    "dotenv": "^17.4.0",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "nodemailer": "^8.0.4",
+    "stripe": "^21.0.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

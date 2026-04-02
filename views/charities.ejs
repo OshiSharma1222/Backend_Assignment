@@ -1,0 +1,23 @@
+<%- include('partials/head', { title, user }) %>
+<section class="card">
+  <h1>Charity Directory</h1>
+  <p>Search and pick where your subscription impact goes. You can also donate independently.</p>
+</section>
+
+<section class="section-grid three">
+  <% charities.forEach(charity => { %>
+    <article class="card">
+      <h3><%= charity.name %></h3>
+      <p><%= charity.short_description %></p>
+      <small><%= charity.upcoming_event || 'No event listed' %></small>
+      <% if (user) { %>
+      <form method="post" action="/charities/donate" class="inline-form">
+        <input type="hidden" name="charityId" value="<%= charity.id %>" />
+        <input type="number" min="1" step="0.01" name="amount" placeholder="Donation amount" required />
+        <button class="btn">Donate</button>
+      </form>
+      <% } %>
+    </article>
+  <% }) %>
+</section>
+<%- include('partials/foot') %>

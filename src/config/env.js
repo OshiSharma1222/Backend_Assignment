@@ -12,7 +12,6 @@ const supabaseServiceRoleKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 const required = [
-  "PORT",
   "JWT_SECRET",
   "APP_BASE_URL"
 ];

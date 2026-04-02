@@ -102,9 +102,15 @@ create table if not exists independent_donations (
   created_at timestamptz not null default now()
 );
 
-insert into charities (name, short_description, long_description, is_featured)
+insert into charities (id, name, short_description, long_description, is_featured)
 values
-  ('Junior Golf Access Fund', 'Supports youth golf training and equipment grants.', 'Builds local opportunities for first-time golfers from underserved communities.', true),
-  ('Cancer Relief Sport Trust', 'Funds patient support through community sporting events.', 'Combines golf charity days with treatment support initiatives.', true),
-  ('Green Course Climate Initiative', 'Improves sustainable practices in community courses.', 'Focuses on water-saving, biodiversity, and low-impact turf management.', false)
-on conflict (name) do nothing;
+  ('11111111-1111-1111-1111-111111111111', 'Junior Golf Access Fund', 'Supports youth golf training and equipment grants.', 'Builds local opportunities for first-time golfers from underserved communities.', true),
+  ('22222222-2222-2222-2222-222222222222', 'Cancer Relief Sport Trust', 'Funds patient support through community sporting events.', 'Combines golf charity days with treatment support initiatives.', true),
+  ('33333333-3333-3333-3333-333333333333', 'Green Course Climate Initiative', 'Improves sustainable practices in community courses.', 'Focuses on water-saving, biodiversity, and low-impact turf management.', false),
+  ('44444444-4444-4444-4444-444444444444', 'Women in Golf Foundation', 'Creates access and mentorship for women in golf.', 'Provides coaching grants, equipment, and outreach for girls and women entering the sport.', true),
+  ('55555555-5555-5555-5555-555555555555', 'Veterans Fairway Support', 'Helps veterans rebuild community through sport.', 'Funds mental health, recreation, and rehabilitation programs linked to golf activities.', false),
+  ('66666666-6666-6666-6666-666666666666', 'Community Sports Meals Network', 'Provides meals tied to local sports and charity events.', 'Supports food programs that partner with amateur tournaments and fundraising days.', false)
+on conflict (name) do update set
+  short_description = excluded.short_description,
+  long_description = excluded.long_description,
+  is_featured = excluded.is_featured;

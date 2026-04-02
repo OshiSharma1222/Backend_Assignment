@@ -2,10 +2,17 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+const supabaseUrl =
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+const supabaseServiceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+
 const required = [
   "PORT",
-  "SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
   "JWT_SECRET",
   "APP_BASE_URL"
 ];
@@ -16,10 +23,18 @@ for (const key of required) {
   }
 }
 
+if (!supabaseUrl) {
+  throw new Error('Missing required environment variable: SUPABASE_URL');
+}
+
+if (!supabaseServiceRoleKey) {
+  throw new Error('Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY');
+}
+
 module.exports = {
   port: Number(process.env.PORT || 4000),
-  supabaseUrl: process.env.SUPABASE_URL,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseUrl,
+  supabaseServiceRoleKey,
   jwtSecret: process.env.JWT_SECRET,
   appBaseUrl: process.env.APP_BASE_URL,
   monthlyPlanAmount: Number(process.env.MONTHLY_PLAN_AMOUNT || 49),

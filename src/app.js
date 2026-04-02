@@ -45,12 +45,12 @@ if (process.env.NODE_ENV === 'production') {
   const frontendPath = path.join(__dirname, "..", "frontend", "dist");
   app.use(express.static(frontendPath));
   
-  app.get("*", (req, res) => {
+  app.get(/.*/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 } else {
   // Development: return a simple message for non-API routes
-  app.get("*", (req, res) => {
+  app.get(/.*/, (req, res) => {
     res.json({ message: "React frontend running on http://localhost:5173" });
   });
 }
@@ -62,4 +62,5 @@ app.listen(env.port, () => {
   console.log(`Server running on port ${env.port}`);
   console.log(`React dev server should run on port 5173`);
 });
+
 

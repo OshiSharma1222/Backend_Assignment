@@ -54,6 +54,7 @@ router.post("/auth/register", async (req, res) => {
     }
 
     const payload = parse.data;
+    const email = payload.email.toLowerCase();
     const { data: existing } = await supabase.from("users").select("id").eq("email", payload.email).maybeSingle();
     if (existing) {
       return res.status(400).json({ message: "Email already exists." });
@@ -64,7 +65,7 @@ router.post("/auth/register", async (req, res) => {
       .from("users")
       .insert({
         full_name: payload.fullName,
-        email: payload.email,
+        email,
         password_hash: hash,
         role: "subscriber",
         selected_charity_id: payload.charityId,
@@ -360,13 +361,19 @@ router.get("/winners/winnings", requireAuth, async (req, res) => {
 
 router.post("/winners/proof", requireAuth, async (req, res) => {
   try {
-    const { winnerId, proof } = req.body;
+    const { winnerId } = req.body;
+    const screenshotUrl = String(req.body.screenshotUrl || req.body.proof || "").trim();
+
+    if (!winnerId || !screenshotUrl) {
+      return res.status(400).json({ message: "Please select a win and provide a screenshot URL" });
+    }
+
     const { data: verification, error } = await supabase
       .from("winner_verifications")
       .insert({
         winner_id: winnerId,
-        proof_file: proof,
-        status: "pending"
+        screenshot_url: screenshotUrl,
+        review_status: "pending"
       })
       .select()
       .single();

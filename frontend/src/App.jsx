@@ -1,15 +1,14 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
-import HomePage from './pages/HomePage';
-import RegisterPage from './pages/RegisterPage';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import CharitiesPage from './pages/CharitiesPage';
-import WinnerProofPage from './pages/WinnerProofPage';
 import AdminPage from './pages/AdminPage';
+import CharitiesPage from './pages/CharitiesPage';
+import DashboardPage from './pages/DashboardPage';
 import ErrorPage from './pages/ErrorPage';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import WinnerProofPage from './pages/WinnerProofPage';
 
 function App() {
   return (

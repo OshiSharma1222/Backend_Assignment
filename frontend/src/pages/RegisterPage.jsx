@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
+import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import * as charityApi from '../services/api';
 
@@ -19,6 +19,14 @@ export default function RegisterPage() {
     charityPercentage: 10,
   });
 
+  const demoCharities = [
+    { id: '11111111-1111-1111-1111-111111111111', name: 'Junior Golf Access Fund' },
+    { id: '22222222-2222-2222-2222-222222222222', name: 'Cancer Relief Sport Trust' },
+    { id: '33333333-3333-3333-3333-333333333333', name: 'Green Course Climate Initiative' },
+    { id: '44444444-4444-4444-4444-444444444444', name: 'Women in Golf Foundation' },
+    { id: '55555555-5555-5555-5555-555555555555', name: 'Veterans Fairway Support' },
+  ];
+
   useEffect(() => {
     fetchCharities();
   }, []);
@@ -26,12 +34,15 @@ export default function RegisterPage() {
   const fetchCharities = async () => {
     try {
       const response = await charityApi.charities.getAll();
-      setCharities(response.data.charities || []);
-      if (response.data.charities?.length > 0) {
-        setFormData(prev => ({ ...prev, charityId: response.data.charities[0].id }));
+      const availableCharities = response.data.charities || [];
+      const displayCharities = availableCharities.length > 0 ? availableCharities : demoCharities;
+      setCharities(displayCharities);
+      if (displayCharities.length > 0) {
+        setFormData(prev => ({ ...prev, charityId: displayCharities[0].id }));
       }
     } catch (err) {
-      setError('Failed to load charities');
+      setCharities(demoCharities);
+      setFormData(prev => ({ ...prev, charityId: demoCharities[0].id }));
     }
   };
 
@@ -112,6 +123,9 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   required
                 >
+                  <option value="" disabled>
+                    Select a charity
+                  </option>
                   {charities.map(charity => (
                     <option key={charity.id} value={charity.id}>
                       {charity.name}

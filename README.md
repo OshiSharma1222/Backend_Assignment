@@ -17,7 +17,7 @@ This project implements the PRD requirements for the Digital Heroes full-stack t
 ├─────────────────────────────────────────────────────────┤
 │         Axios API Client (REST API Integration)          │
 ├─────────────────────────────────────────────────────────┤
-│              Express Backend (Port 5000)                 │
+│              Express Backend (Port 4000)                 │
 │         ├── /api/* Endpoints (JSON responses)            │
 │         ├── /webhooks/stripe (Webhook handler)           │
 │         └── Static file serving (production)             │
@@ -133,7 +133,7 @@ Admin password: `admin123`
 **Terminal 1 - Backend**:
 ```bash
 npm run dev
-# Backend running on http://localhost:5000
+# Backend running on http://localhost:4000
 ```
 
 **Terminal 2 - Frontend**:

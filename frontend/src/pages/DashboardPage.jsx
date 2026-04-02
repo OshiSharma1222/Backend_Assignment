@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import { useEffect, useState } from 'react';
 import Footer from '../components/Footer';
+import Header from '../components/Header';
 import ProtectedRoute from '../components/ProtectedRoute';
 import * as api from '../services/api';
 

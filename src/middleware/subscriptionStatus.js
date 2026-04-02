@@ -28,6 +28,10 @@ async function attachSubscriptionStatus(req, res, next) {
 
 function requireActiveSubscription(req, res, next) {
   if (!req.subscription || req.subscription.status !== "active") {
+    if (req.originalUrl.startsWith('/api/')) {
+      return res.status(403).json({ message: "You need an active subscription to access this feature." });
+    }
+
     return res.status(403).render("error", {
       title: "Subscription Required",
       message: "You need an active subscription to access this feature.",

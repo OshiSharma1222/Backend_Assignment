@@ -52,7 +52,9 @@ export const charities = {
 // Winners APIs
 export const winners = {
   getAll: () => api.get('/api/winners'),
-  uploadProof: (data) => api.post('/api/winners/proof', data),
+  uploadProof: (data) => api.post('/api/winners/proof', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
   getWinnings: () => api.get('/api/winners/winnings'),
 };
 
@@ -63,3 +65,4 @@ export const dashboard = {
 };
 
 export default api;
+

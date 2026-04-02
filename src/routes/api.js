@@ -1,4 +1,7 @@
 const express = require("express");
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 const bcrypt = require("bcryptjs");
 const dayjs = require("dayjs");
 const { z } = require("zod");
@@ -12,6 +15,26 @@ const { isStripeEnabled, createCheckoutSession, retrieveCheckoutSession } = requ
 const { sendWinnerAlert, sendPayoutCompleted } = require("../services/emailService");
 
 const router = express.Router();
+
+const uploadsDir = path.join(__dirname, "..", "..", "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+const proofStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname || "") || ".png";
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  }
+});
+const proofUpload = multer({
+  storage: proofStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files are allowed"));
+    }
+    cb(null, true);
+  }
+});
 
 const registerSchema = z.object({
   fullName: z.string().min(2),
@@ -55,7 +78,7 @@ router.post("/auth/register", async (req, res) => {
 
     const payload = parse.data;
     const email = payload.email.toLowerCase();
-    const { data: existing } = await supabase.from("users").select("id").eq("email", payload.email).maybeSingle();
+    const { data: existing } = await supabase.from("users").select("id").eq("email", email).maybeSingle();
     if (existing) {
       return res.status(400).json({ message: "Email already exists." });
     }
@@ -258,7 +281,7 @@ router.get("/charities/featured", async (req, res) => {
   }
 });
 
-router.post("/charities/donate", async (req, res) => {
+router.post("/charities/donate", requireAuth, async (req, res) => {
   try {
     const parse = donationSchema.safeParse(req.body);
     if (!parse.success) {
@@ -268,9 +291,9 @@ router.post("/charities/donate", async (req, res) => {
     const { data: donation, error } = await supabase
       .from("independent_donations")
       .insert({
+        user_id: req.user.id,
         charity_id: parse.data.charityId,
-        amount: parse.data.amount,
-        donor_name: req.user?.id || "Anonymous"
+        amount: parse.data.amount
       })
       .select()
       .single();
@@ -317,7 +340,7 @@ router.post("/draws/publish", requireAuth, requireAdmin, async (req, res) => {
       const { data: winnerUsers } = await supabase
         .from("winners")
         .select("id, user_id, match_type, payout_amount, users(email, full_name)")
-        .eq("draw_month", monthKey());
+        .eq("draw_id", result.draw.id);
 
       await Promise.all((winnerUsers || []).map((w) => 
         sendWinnerAlert(w.users?.email, w.users?.full_name, w.match_type, w.payout_amount)
@@ -437,15 +460,31 @@ router.get("/winners/winnings", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/winners/proof", requireAuth, async (req, res) => {
+router.post("/winners/proof", requireAuth, proofUpload.single("screenshot"), async (req, res) => {
   try {
-    const { winnerId } = req.body;
-    const screenshotUrl = String(req.body.screenshotUrl || req.body.proof || "").trim();
+    const winnerId = String(req.body.winnerId || "");
 
-    if (!winnerId || !screenshotUrl) {
-      return res.status(400).json({ message: "Please select a win and provide a screenshot URL" });
+    if (!winnerId) {
+      return res.status(400).json({ message: "Please select a win" });
     }
 
+    if (!req.file) {
+      return res.status(400).json({ message: "Please upload a screenshot image" });
+    }
+
+    const { data: winner, error: winnerError } = await supabase
+      .from("winners")
+      .select("id")
+      .eq("id", winnerId)
+      .eq("user_id", req.user.id)
+      .maybeSingle();
+
+    if (winnerError) throw winnerError;
+    if (!winner) {
+      return res.status(404).json({ message: "Winner not found for this user" });
+    }
+
+    const screenshotUrl = `/uploads/${req.file.filename}`;
     const { data: verification, error } = await supabase
       .from("winner_verifications")
       .insert({
@@ -459,6 +498,7 @@ router.post("/winners/proof", requireAuth, async (req, res) => {
     if (error) throw error;
     return res.json({ verification });
   } catch (err) {
+    console.error("Winner proof error:", err);
     return res.status(500).json({ message: "Failed to upload proof" });
   }
 });
@@ -514,4 +554,6 @@ router.get("/dashboard/admin", requireAuth, requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
+
+
 

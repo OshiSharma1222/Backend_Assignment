@@ -6,9 +6,13 @@ import * as api from '../services/api';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [savingScore, setSavingScore] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
-  const [activeTab, setActiveTab] = useState('subscription');
+  const [formData, setFormData] = useState({
+    value: '',
+    playedOn: new Date().toISOString().slice(0, 10),
+  });
 
   useEffect(() => {
     fetchDashboardData();
@@ -25,14 +29,41 @@ export default function DashboardPage() {
     }
   };
 
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    // Implementation will subscribe user
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleAddScore = async (e) => {
     e.preventDefault();
-    // Implementation will add score
+    setError('');
+
+    const scoreValue = Number(formData.value);
+    if (!scoreValue || scoreValue < 1 || scoreValue > 45) {
+      setError('Please enter a score between 1 and 45');
+      return;
+    }
+
+    setSavingScore(true);
+
+    try {
+      await api.scores.add({
+        value: scoreValue,
+        playedOn: formData.playedOn,
+      });
+      setFormData({
+        value: '',
+        playedOn: new Date().toISOString().slice(0, 10),
+      });
+      await fetchDashboardData();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add score');
+    } finally {
+      setSavingScore(false);
+    }
   };
 
   if (loading) {
@@ -67,7 +98,7 @@ export default function DashboardPage() {
                 <p style={{ margin: '0 0 8px 0' }}>Status: <strong>{data?.subscription?.status || 'inactive'}</strong></p>
                 <p style={{ margin: '0' }}>Renewal: {data?.subscription?.renews_at ? new Date(data.subscription.renews_at).toDateString() : 'Not subscribed'}</p>
               </div>
-              <form onSubmit={handleSubscribe} className="inline-form stack">
+              <form onSubmit={(e) => e.preventDefault()} className="inline-form stack">
                 <div>
                   <label>Plan Type</label>
                   <select defaultValue="monthly">
@@ -99,17 +130,34 @@ export default function DashboardPage() {
               <form onSubmit={handleAddScore} className="inline-form stack">
                 <div>
                   <label>Score</label>
-                  <input type="number" min="1" max="45" placeholder="Stableford score" required />
+                  <input
+                    type="number"
+                    name="value"
+                    min="1"
+                    max="45"
+                    placeholder="Stableford score"
+                    value={formData.value}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
                 <div>
                   <label>Played On</label>
-                  <input type="date" required />
+                  <input
+                    type="date"
+                    name="playedOn"
+                    value={formData.playedOn}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-                <button className="btn">Add Score</button>
+                <button className="btn" disabled={savingScore}>
+                  {savingScore ? 'Saving...' : 'Add Score'}
+                </button>
               </form>
               <ul className="list" style={{ marginTop: '16px' }}>
-                {data?.scores?.map((score, i) => (
-                  <li key={i}>
+                {(data?.scores || []).map((score) => (
+                  <li key={score.id || `${score.value}-${score.played_on}`}>
                     <span>{score.value} pts</span>
                     <span>{new Date(score.played_on).toDateString()}</span>
                   </li>
@@ -124,7 +172,7 @@ export default function DashboardPage() {
                   <li key={i}>
                     <div style={{ textAlign: 'left' }}>
                       <span style={{ display: 'block' }}>{w.match_type} - {w.draws?.month_key}</span>
-                      <span style={{ display: 'block', fontSize: '14px', color: 'var(--muted)' }}>${Number(w.payout_amount).toFixed(2)} â€¢ {w.payout_status}</span>
+                      <span style={{ display: 'block', fontSize: '14px', color: 'var(--muted)' }}>${Number(w.payout_amount).toFixed(2)} • {w.payout_status}</span>
                     </div>
                   </li>
                 ))}
@@ -137,3 +185,4 @@ export default function DashboardPage() {
     </ProtectedRoute>
   );
 }
+

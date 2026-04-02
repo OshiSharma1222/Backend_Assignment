@@ -34,6 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "..", "public")));
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use(attachUser);
 app.use(attachSubscriptionStatus);
 
@@ -62,5 +63,7 @@ app.listen(env.port, () => {
   console.log(`Server running on port ${env.port}`);
   console.log(`React dev server should run on port 5173`);
 });
+
+
 
 

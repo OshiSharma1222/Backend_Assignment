@@ -11,9 +11,9 @@ export default function WinnerProofPage() {
   const [success, setSuccess] = useState('');
   const [winnings, setWinnings] = useState([]);
   const [selectedFileName, setSelectedFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     winnerId: '',
-    screenshotUrl: '',
   });
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function WinnerProofPage() {
       const availableWinnings = response.data.winnings || [];
       setWinnings(availableWinnings);
       if (availableWinnings.length > 0) {
-        setFormData(prev => ({ ...prev, winnerId: availableWinnings[0].id }));
+        setFormData({ winnerId: availableWinnings[0].id });
       }
     } catch (err) {
       setError('Failed to load your winnings');
@@ -45,30 +45,10 @@ export default function WinnerProofPage() {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-
-    if (!file) {
-      setSelectedFileName('');
-      setFormData(prev => ({ ...prev, screenshotUrl: '' }));
-      return;
-    }
-
-    setSelectedFileName(file.name);
+    const file = e.target.files?.[0] || null;
+    setSelectedFile(file);
+    setSelectedFileName(file ? file.name : '');
     setError('');
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormData(prev => ({
-        ...prev,
-        screenshotUrl: String(reader.result || ''),
-      }));
-    };
-    reader.onerror = () => {
-      setError('Could not read the selected image');
-      setSelectedFileName('');
-      setFormData(prev => ({ ...prev, screenshotUrl: '' }));
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -79,8 +59,8 @@ export default function WinnerProofPage() {
       return;
     }
 
-    if (!formData.screenshotUrl.trim()) {
-      setError('Please choose an image to upload');
+    if (!selectedFile) {
+      setError('Please upload an image');
       return;
     }
 
@@ -89,12 +69,13 @@ export default function WinnerProofPage() {
     setSuccess('');
 
     try {
-      await api.winners.uploadProof({
-        winnerId: formData.winnerId,
-        screenshotUrl: formData.screenshotUrl.trim(),
-      });
+      const payload = new FormData();
+      payload.append('winnerId', formData.winnerId);
+      payload.append('screenshot', selectedFile);
+      await api.winners.uploadProof(payload);
       setSuccess('Proof uploaded successfully!');
-      setFormData({ winnerId: '', screenshotUrl: '' });
+      setFormData({ winnerId: '' });
+      setSelectedFile(null);
       setSelectedFileName('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to upload proof');
@@ -133,7 +114,7 @@ export default function WinnerProofPage() {
                   <option value="">Choose a win...</option>
                   {winnings.map((winner) => (
                     <option key={winner.id} value={winner.id}>
-                      {winner.draws?.month_key || 'Unknown draw'} • {winner.match_type} • {winner.payout_status}
+                      {winner.draws?.month_key || 'Unknown draw'} - {winner.match_type} - {winner.payout_status}
                     </option>
                   ))}
                 </select>
@@ -164,4 +145,3 @@ export default function WinnerProofPage() {
     </ProtectedRoute>
   );
 }
-
